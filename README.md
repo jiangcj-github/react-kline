@@ -1,14 +1,8 @@
-# Kline     [![npm version](https://badge.fury.io/js/react-kline.svg)](https://badge.fury.io/js/react-kline)
+# react-kline     [![npm version](https://badge.fury.io/js/react-kline.svg)](https://badge.fury.io/js/react-kline)
 
 [![NPM](https://nodei.co/npm/react-kline.png)](https://www.npmjs.com/package/react-kline)
 
-> 本项目在原有的kline项目上做了一些修改，最大限度减小代码体积，提供了一个轻量级的K线图解决方案:
-
-* 原项目github地址为：[Kline](https://github.com/chxj1992/kline)
-* 去除firebase相关依赖
-* css样式改由<link>标签引入
-* 去除sockjs相关依赖
-* 核心代码kline.min.js大小为264K，gzip压缩后46K
+> 基于React的K线图组件
 
 ### 演示地址
 
@@ -30,37 +24,44 @@
 
 ![](screen_large.png)
 
-### Requirements
-
-* jquery
-* jquery.mousewheel
-* stomp (仅stomp方式需要)
-
 ### Install & Load
 
-下载及编译
+安装
 
 ```bash
-$ git clone https://github.com/lindakai2016/Kline.git
-$ cd Kline
-$ npm install
-$ npm run build
+$ npm install react-kline
 ```
 
-* 使用标签引入, 在HTML页面头部加入
+* 使用
 
 ```html
-    <link href="../src/css/main.css" type="text/css" rel="stylesheet">
-    <script src="/lib/stomp.js"></script>
-    <script src="/lib/jquery-3.3.1.min.js"></script>
-    <script src="/lib/jquery.mousewheel.js"></script>
-    <script src="/dist/kline.min.js"></script>
-```
+    import React from 'react';
+    import ReactDOM from 'react-dom';
+    import ReactKline from 'react-kline';
 
-* 在页面中加入
+    class App extends React.Component {
+        render() {
+            return (
+                <ReactKline
+                    width={600}
+                    height={400}
+                    ranges={["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"]}
+                    symbol={"BTC"}
+                    symbolName={"BTC/USD"}
+                    intervalTime={5000}
+                    showDepth={false}
+                    depthWidth={50}
+                    type={"poll"}
+                    url={"/example/src/mock.json"}
+                />
+            );
+        }
+    }
 
-```html
-  <div id="kline_container"></div>
+    ReactDOM.render(
+        <App />,
+        document.getElementById('root')
+    );
 ```
 
 ### Examples
@@ -68,29 +69,17 @@ $ npm run build
 * Poll(轮询)
 
 ```javascript
-    var kline = new Kline({
-        element: "#kline_container",
-        symbol: "BTC",
-        symbolName: "比特币",
-        type: "poll", // poll/stomp
-        url: "http://127.0.0.1:8080/mock.json"
-    });
-    kline.draw();
+    type={"poll"}
+    url={"http://127.0.0.1/mock.json"}
 ```
 
 * Stomp Over Websocket
 
 ```javascript
-   var kline = new Kline({
-        element: "#kline_container",
-        symbol: "BTC",
-        symbolName: "比特币",
-        type: "stomp", // poll/stomp
-        url: 'http://127.0.0.1:8088/socket',
-        subscribePath: "/kline/subscribe",
-        sendPath: "/kline/send"       
-    });
-    kline.draw();
+   type={"stomp"}
+   url: {"http://127.0.0.1:8088/socket"}
+   subscribePath={"/kline/subscribe"}
+   sendPath={"/kline/send" }
 ```
 
 
@@ -126,7 +115,7 @@ $ npm run build
     画K线图
 
 ```javascript
-kline.draw();
+draw();
 ```
 
 * resize(int width, int height)
@@ -134,7 +123,7 @@ kline.draw();
     设置画布大小
 
 ```javascript
-kline.resize(1200, 550);
+resize(1200, 550);
 ```
 
 * setSymbol(string symbol, string symbolName)
@@ -142,7 +131,7 @@ kline.resize(1200, 550);
     设置交易品种
 
 ```javascript
-kline.setSymbol('usd/btc', 'USD/BTC');
+setSymbol('usd/btc', 'USD/BTC');
 ```
 
 * setTheme(string style)
@@ -150,7 +139,7 @@ kline.setSymbol('usd/btc', 'USD/BTC');
     设置主题
 
 ```javascript
-kline.setTheme('dark');  // dark/light
+setTheme('dark');  // dark/light
 ```
 
 * setLanguage(string lang)
@@ -158,7 +147,7 @@ kline.setTheme('dark');  // dark/light
     设置语言
 
 ```javascript
-kline.setLanguage('en-us');  // en-us/zh-ch/zh-tw
+setLanguage('en-us');  // en-us/zh-ch/zh-tw
 ```
 
 * setIntervalTime: function (intervalTime) 
@@ -166,7 +155,7 @@ kline.setLanguage('en-us');  // en-us/zh-ch/zh-tw
     设置请求间隔时间(ms)
 
 ```javascript
-kline.setIntervalTime(5000); 
+setIntervalTime(5000);
 ```
 
 * Kline.setDepth: function(showDepth,depthWidth)
@@ -174,7 +163,7 @@ kline.setIntervalTime(5000);
     设置深度图
 
 ```javascript
-kline.setDepth(true,50);
+setDepth(true,50);
 ```
 
 * connect: function () 
@@ -182,7 +171,7 @@ kline.setDepth(true,50);
     建立socket连接
 
 ```javascript
-kline.connect(); 
+connect();
 ```
 
 * disconnect: function () 
@@ -190,7 +179,7 @@ kline.connect();
     断开socket连接
 
 ```javascript
-kline.disconnect(); 
+disconnect();
 ```
 
 * pause: function () 
@@ -198,7 +187,7 @@ kline.disconnect();
     暂停请求数据
 
 ```javascript
-kline.pause(); 
+pause();
 ```
 
 * resend: function () 
@@ -206,7 +195,7 @@ kline.pause();
     重新请求数据
 
 ```javascript
-kline.resend(); 
+resend();
 ```
 
 ### Events
@@ -218,22 +207,6 @@ kline.resend();
 | `onSymbolChange: function(symbol, symbolName)`   | 交易品种改变时触发
 | `onThemeChange: function(theme)`   | 主题改变时触发
 | `onRangeChange: function(range)`   | 聚合时间改变时触发
-
-
-> Example
-
-```javascript
-    var kline = new Kline({
-        element: "#kline_container",
-        symbol: "BTC",
-        symbolName: "比特币",
-        type: "poll", // poll/stomp
-        url: "http://127.0.0.1:8080/mock.json",
-        onResize: function(width, height) {
-            console.log("chart resized: " + width + " " + height);
-        }
-    });
-```
 
 
 ### Response
@@ -253,15 +226,6 @@ kline.resend();
         99.30597249871,
         66.9905449283
       ]
-    ],
-    "trades": [
-      {
-        "amount": 0.02,
-        "price": 5798.79,
-        "tid": 373015085,
-        "time": 1508136949000,
-        "type": "buy"
-      }
     ],
     "depths": {
       "asks": [
@@ -285,4 +249,3 @@ kline.resend();
 
 * `lines`: K线图, 依次是: 时间(ms), 开盘价, 最高价, 最低价, 收盘价, 成交量
 * `depths`(可选, 行情侧边栏显示): 深度图数据,  `asks`:一定比例的卖单列表, `bids`:一定比例的买单列表, 其中每项的值依次是 成交价, 成交量
-* `trades`(可选, 行情侧边栏显示, 功能已屏蔽): 最近成交记录,  `amount`: 成交量, `price`:单价, `tid`:订单ID, `time`:成交时间(ms), `type`:成交类型 buy/sell
