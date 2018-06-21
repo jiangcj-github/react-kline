@@ -1,6 +1,6 @@
-# Kline     [![npm version](https://badge.fury.io/js/kline.svg)](https://badge.fury.io/js/kline)
+# Kline     [![npm version](https://badge.fury.io/js/react-kline.svg)](https://badge.fury.io/js/react-kline)
 
-[![NPM](https://nodei.co/npm/kline.png)](https://www.npmjs.com/package/react-kline)
+[![NPM](https://nodei.co/npm/react-kline.png)](https://www.npmjs.com/package/react-kline)
 
 > 本项目在原有的kline项目上做了一些修改，最大限度减小代码体积，提供了一个轻量级的K线图解决方案:
 
