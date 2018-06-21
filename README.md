@@ -1,10 +1,6 @@
 # Kline     [![npm version](https://badge.fury.io/js/kline.svg)](https://badge.fury.io/js/kline)
 
-<a href="http://www.wtfpl.net/"><img
-       src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png"
-       width="80" height="15" alt="WTFPL" /></a>
-
-[![NPM](https://nodei.co/npm/kline.png)](https://npmjs.org/package/kline)
+[![NPM](https://nodei.co/npm/kline.png)](https://www.npmjs.com/package/react-kline)
 
 > 本项目在原有的kline项目上做了一些修改，最大限度减小代码体积，提供了一个轻量级的K线图解决方案:
 
