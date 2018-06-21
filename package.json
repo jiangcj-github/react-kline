@@ -1,12 +1,15 @@
 {
   "name": "react-kline",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server --inline --progress --mode development",
-    "build": "babel src -d dist --copy-files"
+    "build": "babel src -d dist --copy-files",
+    "build-demo": "webpack --mode production",
+    "deploy-demo": "gh-pages -d example/dist",
+    "publish-demo": "npm run build-demo && npm run deploy-demo"
   },
   "keywords": [],
   "author": "",

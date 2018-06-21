@@ -1,3 +1,5 @@
+.idea
+.git
 src
 examples
 node_modules
