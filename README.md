@@ -6,10 +6,6 @@
 
 [![NPM](https://nodei.co/npm/kline.png)](https://npmjs.org/package/kline)
 
-### 演示地址
-
-   [Demo](https://lindakai2016.github.io/react-kline/index.html)
-
 > 本项目在原有的kline项目上做了一些修改，最大限度减小代码体积，提供了一个轻量级的K线图解决方案:
 
 * 原项目github地址为：[Kline](https://github.com/chxj1992/kline)
@@ -17,6 +13,10 @@
 * css样式改由<link>标签引入
 * 去除sockjs相关依赖
 * 核心代码kline.min.js大小为264K，gzip压缩后46K
+
+### 演示地址
+
+* [Demo](https://lindakai2016.github.io/react-kline/index.html)
 
 ### Features
 
