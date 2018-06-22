@@ -8,13 +8,7 @@
 
 * [Demo](https://lindakai2016.github.io/react-kline/index.html)
 
-### ScreenShot!
-
-![](screen_small.png)
-
-![](screen_large.png)
-
-### Install & Load
+### 安装和使用
 
 安装
 
