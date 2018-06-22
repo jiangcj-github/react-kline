@@ -23,10 +23,6 @@ var _jquery = require('jquery');
 
 var _jquery2 = _interopRequireDefault(_jquery);
 
-var _stompjs = require('stompjs');
-
-var _stompjs2 = _interopRequireDefault(_stompjs);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -83,96 +79,28 @@ var Control = exports.Control = function () {
     }, {
         key: 'requestData',
         value: function requestData(showLoading) {
-            Control.AbortRequest();
             window.clearTimeout(_kline2.default.instance.timer);
-            if (_kline2.default.instance.paused) {
-                return;
-            }
             if (showLoading === true) {
                 (0, _jquery2.default)("#chart_loading").addClass("activated");
             }
-            if (_kline2.default.instance.type === "stomp" && _kline2.default.instance.stompClient) {
-                Control.requestOverStomp();
-            } else {
-                Control.requestOverHttp();
-            }
-        }
-    }, {
-        key: 'parseRequestParam',
-        value: function parseRequestParam(str) {
-            return JSON.parse('{"' + decodeURI(str.replace(/&/g, "\",\"").replace(/=/g, "\":\"")) + '"}');
-        }
-    }, {
-        key: 'requestOverStomp',
-        value: function requestOverStomp() {
-            if (!_kline2.default.instance.socketConnected) {
-                if (_kline2.default.instance.debug) {
-                    console.log("DEBUG: socket is not coonnected");
-                }
-                return;
-            }
-            if (_kline2.default.instance.stompClient && _kline2.default.instance.stompClient.ws.readyState === 1) {
-                _kline2.default.instance.stompClient.send(_kline2.default.instance.sendPath, {}, JSON.stringify(Control.parseRequestParam(_kline2.default.instance.requestParam)));
-                return;
-            }
-            if (_kline2.default.instance.debug) {
-                console.log("DEBUG: stomp client is not ready yet ...");
-            }
-            _kline2.default.instance.timer = setTimeout(function () {
-                Control.requestData(true);
-            }, 1000);
-        }
-    }, {
-        key: 'requestOverHttp',
-        value: function requestOverHttp() {
-            if (_kline2.default.instance.debug) {
-                console.log("DEBUG: " + _kline2.default.instance.requestParam);
-            }
-            (0, _jquery2.default)(document).ready(_kline2.default.instance.G_HTTP_REQUEST = _jquery2.default.ajax({
-                type: "GET",
-                url: _kline2.default.instance.url,
-                dataType: 'json',
-                data: _kline2.default.instance.requestParam,
-                timeout: 30000,
-                created: Date.now(),
-                beforeSend: function beforeSend() {
-                    this.range = _kline2.default.instance.range;
-                    this.symbol = _kline2.default.instance.symbol;
-                },
-                success: function success(res) {
-                    if (_kline2.default.instance.G_HTTP_REQUEST) {
-                        Control.requestSuccessHandler(res);
-                    }
-                },
-                error: function error(xhr, textStatus, errorThrown) {
+            _kline2.default.instance.onRequestDataFunc(_kline2.default.instance.requestParam, function (res) {
+                if (res && res.success) {
+                    Control.requestSuccessHandler(res);
+                } else {
                     if (_kline2.default.instance.debug) {
-                        console.log(xhr);
-                    }
-                    if (xhr.status === 200 && xhr.readyState === 4) {
-                        return;
+                        console.log(res);
                     }
                     _kline2.default.instance.timer = setTimeout(function () {
                         Control.requestData(true);
                     }, _kline2.default.instance.intervalTime);
-                },
-                complete: function complete() {
-                    _kline2.default.instance.G_HTTP_REQUEST = null;
                 }
-            }));
+            });
         }
     }, {
         key: 'requestSuccessHandler',
         value: function requestSuccessHandler(res) {
             if (_kline2.default.instance.debug) {
                 console.log(res);
-            }
-            if (!res || !res.success) {
-                if (_kline2.default.instance.type === 'poll') {
-                    _kline2.default.instance.timer = setTimeout(function () {
-                        Control.requestData(true);
-                    }, _kline2.default.instance.intervalTime);
-                }
-                return;
             }
             (0, _jquery2.default)("#chart_loading").removeClass("activated");
 
@@ -186,50 +114,29 @@ var Control = exports.Control = function () {
             var intervalTime = _kline2.default.instance.intervalTime < _kline2.default.instance.range ? _kline2.default.instance.intervalTime : _kline2.default.instance.range;
 
             if (!updateDataRes) {
-                if (_kline2.default.instance.type === 'poll') {
-                    _kline2.default.instance.timer = setTimeout(Control.requestData, intervalTime);
-                }
+                _kline2.default.instance.timer = setTimeout(Control.requestData, intervalTime);
                 return;
             }
-            /*
-            if (Kline.instance.data.trades && Kline.instance.data.trades.length > 0) {
-                KlineTrade.instance.pushTrades(Kline.instance.data.trades);
-                KlineTrade.instance.klineTradeInit = true;
-            }
-            */
+
             var tmp = _chart_settings.ChartSettings.get();
-            if (_kline2.default.instance.data.depths && tmp.charts.showDepth) {
-                //KlineTrade.instance.updateDepth(Kline.instance.data.depths);
+            //画深度图
+            if (_kline2.default.instance.data.depths && tmp.charts.depthStatus === "open") {
                 _chart_manager.ChartManager.instance.getChart().updateDepth(_kline2.default.instance.data.depths);
             }
             Control.clearRefreshCounter();
 
-            if (_kline2.default.instance.type === 'poll') {
-                _kline2.default.instance.timer = setTimeout(Control.TwoSecondThread, intervalTime);
-            }
-
+            _kline2.default.instance.timer = setTimeout(Control.TwoSecondThread, intervalTime);
             _chart_manager.ChartManager.instance.redraw('All', false);
-        }
-    }, {
-        key: 'AbortRequest',
-        value: function AbortRequest() {
-            if (_kline2.default.instance.type !== "stomp" || !_kline2.default.instance.stompClient) {
-                if (_kline2.default.instance.G_HTTP_REQUEST && _kline2.default.instance.G_HTTP_REQUEST.readyState !== 4) {
-                    _kline2.default.instance.G_HTTP_REQUEST.abort();
-                }
-            }
         }
     }, {
         key: 'TwoSecondThread',
         value: function TwoSecondThread() {
             var f = _kline2.default.instance.chartMgr.getDataSource("frame0.k0").getLastDate();
-
             if (f === -1) {
                 _kline2.default.instance.requestParam = Control.setHttpRequestParam(_kline2.default.instance.symbol, _kline2.default.instance.range, _kline2.default.instance.limit, null);
             } else {
                 _kline2.default.instance.requestParam = Control.setHttpRequestParam(_kline2.default.instance.symbol, _kline2.default.instance.range, null, f.toString());
             }
-
             Control.requestData();
         }
     }, {
@@ -238,7 +145,15 @@ var Control = exports.Control = function () {
             _chart_settings.ChartSettings.get();
             _chart_settings.ChartSettings.save();
             var tmp = _chart_settings.ChartSettings.get();
+            // 主图样式
+            var chart_style = (0, _jquery2.default)('#chart_select_chart_style');
+            chart_style.find('a').each(function () {
+                if ((0, _jquery2.default)(this)[0].innerHTML === tmp.charts.chartStyle) {
+                    (0, _jquery2.default)(this).addClass('selected');
+                }
+            });
             _chart_manager.ChartManager.instance.setChartStyle('frame0.k0', tmp.charts.chartStyle);
+            // 交易品种
             var symbol = tmp.charts.symbol;
             if (!_kline2.default.instance.init) {
                 symbol = _kline2.default.instance.symbol;
@@ -246,48 +161,52 @@ var Control = exports.Control = function () {
             }
             _kline2.default.instance.symbol = symbol;
             Control.switchSymbolSelected(symbol);
+            // 周期
             var period = tmp.charts.period;
-            Control.switchPeriod(period);
             (0, _jquery2.default)('#chart_period_' + period + '_v a').addClass('selected');
             (0, _jquery2.default)('#chart_period_' + period + '_h a').addClass('selected');
+            Control.switchPeriod(period);
+            // 技术指标
             if (tmp.charts.indicsStatus === 'close') {
                 Control.switchIndic('off');
             } else if (tmp.charts.indicsStatus === 'open') {
                 Control.switchIndic('on');
             }
+            // 主指标
             var mainIndic = (0, _jquery2.default)('#chart_select_main_indicator');
             mainIndic.find('a').each(function () {
                 if ((0, _jquery2.default)(this).attr('name') === tmp.charts.mIndic) {
                     (0, _jquery2.default)(this).addClass('selected');
                 }
             });
-            var chart_style = (0, _jquery2.default)('#chart_select_chart_style');
-            chart_style.find('a').each(function () {
-                if ((0, _jquery2.default)(this)[0].innerHTML === tmp.charts.chartStyle) {
-                    (0, _jquery2.default)(this).addClass('selected');
-                }
-            });
             _chart_manager.ChartManager.instance.getChart().setMainIndicator(tmp.charts.mIndic);
+            // 主题
             _chart_manager.ChartManager.instance.setThemeName('frame0', tmp.theme);
+            // 画图工具
             Control.switchTools('off');
             if (tmp.theme === 'Dark') {
                 Control.switchTheme('dark');
             } else if (tmp.theme === 'Light') {
                 Control.switchTheme('light');
             }
+            // 语言
             Control.chartSwitchLanguage(tmp.language || "zh-cn");
+            // 深度图
+            if (tmp.charts.depthStatus === "close") {
+                Control.switchDepth("off");
+            } else if (tmp.charts.depthStatus === "open") {
+                Control.switchDepth("on");
+            }
         }
     }, {
         key: 'setHttpRequestParam',
         value: function setHttpRequestParam(symbol, range, limit, since) {
-            var str = "symbol=" + symbol + "&range=" + range;
-            if (limit !== null) str += "&limit=" + limit;else str += "&since=" + since;
-            /*
-            if (KlineTrade.instance.tradeDate.getTime() !== 0) {
-                str += "&prevTradeTime=" + KlineTrade.instance.tradeDate.getTime();
-            }
-            */
-            return str;
+            return {
+                symbol: symbol,
+                range: range,
+                limit: limit,
+                since: since
+            };
         }
     }, {
         key: 'refreshTemplate',
@@ -317,13 +236,12 @@ var Control = exports.Control = function () {
             var tmp = _chart_settings.ChartSettings.get();
             tmp.language = lang;
             _chart_settings.ChartSettings.save();
-            _kline2.default.instance.onLangChange(lang);
+            _kline2.default.instance.onLangChangeFunc(lang);
         }
     }, {
         key: 'onSize',
         value: function onSize(w, h) {
             var width = w || window.innerWidth;
-            //let chartWidth = Kline.instance.showTrade ? (width - Kline.instance.tradeWidth) : width;
             var chartWidth = width;
             var height = h || window.innerHeight;
             var container = (0, _jquery2.default)(_kline2.default.instance.element);
@@ -418,7 +336,7 @@ var Control = exports.Control = function () {
             var showIndicNW = periodsHorzNW + showIndic.offsetWidth + 4;
             var showToolsNW = showIndicNW + showTools.offsetWidth + 4;
             var selectThemeNW = showToolsNW + selectTheme.offsetWidth;
-            var dropDownSettingsW = dropDownSettings.find(".chart_dropdown_t")[0].offsetWidth + 150;
+            var dropDownSettingsW = dropDownSettings.find(".chart_dropdown_t")[0].offsetWidth + 250;
             periodsVertNW += dropDownSettingsW;
             periodsHorzNW += dropDownSettingsW;
             showIndicNW += dropDownSettingsW;
@@ -452,7 +370,7 @@ var Control = exports.Control = function () {
             }
 
             _chart_manager.ChartManager.instance.redraw('All', true);
-            _kline2.default.instance.onResize(width, height);
+            _kline2.default.instance.onResizeFunc(width, height);
         }
     }, {
         key: 'mouseWheel',
@@ -464,7 +382,6 @@ var Control = exports.Control = function () {
     }, {
         key: 'switchTheme',
         value: function switchTheme(name) {
-
             (0, _jquery2.default)('#chart_toolbar_theme a').removeClass('selected');
             (0, _jquery2.default)('#chart_select_theme a').removeClass('selected');
             (0, _jquery2.default)('#chart_toolbar_theme').find('a').each(function () {
@@ -501,7 +418,7 @@ var Control = exports.Control = function () {
             new _mevent.MEvent().raise(name);
             _chart_manager.ChartManager.instance.redraw();
 
-            _kline2.default.instance.onThemeChange(name);
+            _kline2.default.instance.onThemeChangeFunc(name);
         }
     }, {
         key: 'switchTools',
@@ -612,30 +529,28 @@ var Control = exports.Control = function () {
         }
     }, {
         key: 'switchDepth',
-        value: function switchDepth(showDepth, depthWidth) {
+        value: function switchDepth(name) {
             var tmp = _chart_settings.ChartSettings.get();
-            tmp.charts.showDepth = showDepth;
-            tmp.charts.depthWidth = depthWidth;
+            if (name === "on") {
+                tmp.charts.depthStatus = "open";
+                (0, _jquery2.default)("#chart_show_depth").addClass("selected");
+                _chart_manager.ChartManager.instance.getChart().updateDepth(_kline2.default.instance.data.depths);
+            } else if (name === "off") {
+                tmp.charts.depthStatus = "close";
+                (0, _jquery2.default)("#chart_show_depth").removeClass("selected");
+                _chart_manager.ChartManager.instance.getChart().updateDepth(null);
+            }
             _chart_settings.ChartSettings.save();
         }
     }, {
         key: 'reset',
         value: function reset(symbol) {
             _kline2.default.instance.symbol = symbol;
-            /*
-            if (Kline.instance.showTrade) {
-                KlineTrade.instance.reset(symbol);
-            }
-            */
         }
     }, {
         key: 'switchSymbolSelected',
         value: function switchSymbolSelected(symbol, symbolName) {
             Control.reset(symbol);
-            /*
-            $(".market_chooser ul a").removeClass("selected");
-            $(".market_chooser ul a[name='" + symbol + "']").addClass("selected");
-            */
             (0, _jquery2.default)(".symbol-title").text(symbolName);
             _chart_manager.ChartManager.instance.getChart()._symbol = symbol;
             var settings = _chart_settings.ChartSettings.get();
@@ -673,39 +588,6 @@ var Control = exports.Control = function () {
             }
             periodWeight[index] = 8;
             _chart_settings.ChartSettings.save();
-        }
-    }, {
-        key: 'subscribeCallback',
-        value: function subscribeCallback(res) {
-            Control.requestSuccessHandler(JSON.parse(res.body));
-        }
-    }, {
-        key: 'socketConnect',
-        value: function socketConnect() {
-            if (!_kline2.default.instance.stompClient || !_kline2.default.instance.socketConnected) {
-                _kline2.default.instance.stompClient = _stompjs2.default.client(_kline2.default.instance.url);
-                _kline2.default.instance.socketConnected = true;
-            }
-
-            if (_kline2.default.instance.stompClient.ws.readyState === 1) {
-                console.log('DEBUG: already connected');
-                return;
-            }
-
-            if (!_kline2.default.instance.debug) {
-                _kline2.default.instance.stompClient.debug = null;
-            }
-            _kline2.default.instance.stompClient.connect({}, function () {
-                _kline2.default.instance.stompClient.subscribe('/user' + _kline2.default.instance.subscribePath, Control.subscribeCallback);
-                _kline2.default.instance.subscribed = _kline2.default.instance.stompClient.subscribe(_kline2.default.instance.subscribePath + '/' + _kline2.default.instance.symbol + '/' + _kline2.default.instance.range, Control.subscribeCallback);
-                Control.requestData(true);
-            }, function () {
-                _kline2.default.instance.stompClient.disconnect();
-                console.log("DEBUG: reconnect in 5 seconds ...");
-                setTimeout(function () {
-                    Control.socketConnect();
-                }, 5000);
-            });
         }
     }]);
 

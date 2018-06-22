@@ -43,9 +43,6 @@ export class Chart {
         ChartManager.instance.setCurrentDataSource('frame0.k0', this._symbol + '.' + this._range);
         ChartManager.instance.setNormalMode();
         let f = Kline.instance.chartMgr.getDataSource("frame0.k0").getLastDate();
-
-        $('.symbol-title>a').text(Kline.instance.symbolName);
-
         if (f === -1) {
             Kline.instance.requestParam = Control.setHttpRequestParam(Kline.instance.symbol, Kline.instance.range, Kline.instance.limit, null);
             Control.requestData(true);
@@ -74,7 +71,7 @@ export class Chart {
             Kline.instance.subscribed = Kline.instance.stompClient.subscribe(Kline.instance.subscribePath + '/' + Kline.instance.symbol + '/' + this._range, Control.subscribeCallback);
         }
         this.updateDataAndDisplay();
-        Kline.instance.onRangeChange(this._range);
+        Kline.instance.onRangeChangeFunc(this._range);
     }
 
     updateDataSource(data) {

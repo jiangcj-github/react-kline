@@ -4,8 +4,6 @@ import {ChartSettings} from './chart_settings'
 import {DefaultTemplate, Template} from './templates'
 import {MEvent} from './mevent'
 import $ from 'jquery'
-import Stomp from 'stompjs'
-
 
 export class Control {
 
@@ -52,94 +50,27 @@ export class Control {
     }
 
     static requestData(showLoading) {
-        Control.AbortRequest();
         window.clearTimeout(Kline.instance.timer);
-        if (Kline.instance.paused) {
-            return;
-        }
         if (showLoading === true) {
             $("#chart_loading").addClass("activated");
         }
-        if (Kline.instance.type === "stomp" && Kline.instance.stompClient) {
-            Control.requestOverStomp();
-        } else {
-            Control.requestOverHttp();
-        }
-    }
-
-    static parseRequestParam(str) {
-        return JSON.parse('{"' + decodeURI(str.replace(/&/g, "\",\"").replace(/=/g, "\":\"")) + '"}')
-    }
-
-    static requestOverStomp() {
-        if (!Kline.instance.socketConnected) {
-            if (Kline.instance.debug) {
-                console.log("DEBUG: socket is not coonnected")
-            }
-            return;
-        }
-        if (Kline.instance.stompClient && Kline.instance.stompClient.ws.readyState === 1) {
-            Kline.instance.stompClient.send(Kline.instance.sendPath, {}, JSON.stringify(Control.parseRequestParam(Kline.instance.requestParam)));
-            return;
-        }
-        if (Kline.instance.debug) {
-            console.log("DEBUG: stomp client is not ready yet ...");
-        }
-        Kline.instance.timer = setTimeout(function () {
-            Control.requestData(true);
-        }, 1000);
-    }
-
-    static requestOverHttp() {
-        if (Kline.instance.debug) {
-            console.log("DEBUG: " + Kline.instance.requestParam);
-        }
-        $(document).ready(
-            Kline.instance.G_HTTP_REQUEST = $.ajax({
-                type: "GET",
-                url: Kline.instance.url,
-                dataType: 'json',
-                data: Kline.instance.requestParam,
-                timeout: 30000,
-                created: Date.now(),
-                beforeSend: function () {
-                    this.range = Kline.instance.range;
-                    this.symbol = Kline.instance.symbol;
-                },
-                success: function (res) {
-                    if (Kline.instance.G_HTTP_REQUEST) {
-                        Control.requestSuccessHandler(res);
-                    }
-                },
-                error: function (xhr, textStatus, errorThrown) {
-                    if (Kline.instance.debug) {
-                        console.log(xhr);
-                    }
-                    if (xhr.status === 200 && xhr.readyState === 4) {
-                        return;
-                    }
-                    Kline.instance.timer = setTimeout(function () {
-                        Control.requestData(true);
-                    }, Kline.instance.intervalTime);
-                },
-                complete: function () {
-                    Kline.instance.G_HTTP_REQUEST = null;
+        Kline.instance.onRequestDataFunc(Kline.instance.requestParam,function(res){
+            if(res && res.success){
+                Control.requestSuccessHandler(res);
+            }else{
+                if (Kline.instance.debug) {
+                    console.log(res);
                 }
-            })
-        );
+                Kline.instance.timer = setTimeout(function () {
+                    Control.requestData(true);
+                }, Kline.instance.intervalTime);
+            }
+        })
     }
 
     static requestSuccessHandler(res) {
         if (Kline.instance.debug) {
             console.log(res);
-        }
-        if (!res || !res.success) {
-            if (Kline.instance.type === 'poll') {
-                Kline.instance.timer = setTimeout(function () {
-                    Control.requestData(true);
-                }, Kline.instance.intervalTime);
-            }
-            return;
         }
         $("#chart_loading").removeClass("activated");
 
@@ -153,48 +84,28 @@ export class Control {
         let intervalTime = Kline.instance.intervalTime < Kline.instance.range ? Kline.instance.intervalTime : Kline.instance.range;
 
         if (!updateDataRes) {
-            if (Kline.instance.type === 'poll') {
-                Kline.instance.timer = setTimeout(Control.requestData, intervalTime);
-            }
+            Kline.instance.timer = setTimeout(Control.requestData, intervalTime);
             return;
         }
-        /*
-        if (Kline.instance.data.trades && Kline.instance.data.trades.length > 0) {
-            KlineTrade.instance.pushTrades(Kline.instance.data.trades);
-            KlineTrade.instance.klineTradeInit = true;
-        }
-        */
+
         let tmp = ChartSettings.get();
-        if (Kline.instance.data.depths && tmp.charts.showDepth) {
-            //KlineTrade.instance.updateDepth(Kline.instance.data.depths);
+        //画深度图
+        if (Kline.instance.data.depths && tmp.charts.depthStatus==="open") {
             ChartManager.instance.getChart().updateDepth(Kline.instance.data.depths);
         }
         Control.clearRefreshCounter();
 
-        if (Kline.instance.type === 'poll') {
-            Kline.instance.timer = setTimeout(Control.TwoSecondThread, intervalTime);
-        }
-
+        Kline.instance.timer = setTimeout(Control.TwoSecondThread, intervalTime);
         ChartManager.instance.redraw('All', false);
-    }
-
-    static AbortRequest() {
-        if (Kline.instance.type !== "stomp" || !Kline.instance.stompClient) {
-            if (Kline.instance.G_HTTP_REQUEST && Kline.instance.G_HTTP_REQUEST.readyState !== 4) {
-                Kline.instance.G_HTTP_REQUEST.abort();
-            }
-        }
     }
 
     static TwoSecondThread() {
         let f = Kline.instance.chartMgr.getDataSource("frame0.k0").getLastDate();
-
         if (f === -1) {
             Kline.instance.requestParam = Control.setHttpRequestParam(Kline.instance.symbol, Kline.instance.range, Kline.instance.limit, null);
         } else {
             Kline.instance.requestParam = Control.setHttpRequestParam(Kline.instance.symbol, Kline.instance.range, null, f.toString());
         }
-
         Control.requestData();
     }
 
@@ -202,7 +113,15 @@ export class Control {
         ChartSettings.get();
         ChartSettings.save();
         let tmp = ChartSettings.get();
+        // 主图样式
+        let chart_style = $('#chart_select_chart_style');
+        chart_style.find('a').each(function () {
+            if ($(this)[0].innerHTML === tmp.charts.chartStyle) {
+                $(this).addClass('selected');
+            }
+        });
         ChartManager.instance.setChartStyle('frame0.k0', tmp.charts.chartStyle);
+        // 交易品种
         let symbol = tmp.charts.symbol;
         if (!Kline.instance.init) {
             symbol = Kline.instance.symbol;
@@ -210,51 +129,51 @@ export class Control {
         }
         Kline.instance.symbol = symbol;
         Control.switchSymbolSelected(symbol);
+        // 周期
         let period = tmp.charts.period;
-        Control.switchPeriod(period);
         $('#chart_period_' + period + '_v a').addClass('selected');
         $('#chart_period_' + period + '_h a').addClass('selected');
+        Control.switchPeriod(period);
+        // 技术指标
         if (tmp.charts.indicsStatus === 'close') {
             Control.switchIndic('off');
         } else if (tmp.charts.indicsStatus === 'open') {
             Control.switchIndic('on');
         }
+        // 主指标
         let mainIndic = $('#chart_select_main_indicator');
         mainIndic.find('a').each(function () {
             if ($(this).attr('name') === tmp.charts.mIndic) {
                 $(this).addClass('selected');
             }
         });
-        let chart_style = $('#chart_select_chart_style');
-        chart_style.find('a').each(function () {
-            if ($(this)[0].innerHTML === tmp.charts.chartStyle) {
-                $(this).addClass('selected');
-            }
-        });
         ChartManager.instance.getChart().setMainIndicator(tmp.charts.mIndic);
+        // 主题
         ChartManager.instance.setThemeName('frame0', tmp.theme);
+        // 画图工具
         Control.switchTools('off');
         if (tmp.theme === 'Dark') {
             Control.switchTheme('dark');
         } else if (tmp.theme === 'Light') {
             Control.switchTheme('light');
         }
+        // 语言
         Control.chartSwitchLanguage(tmp.language || "zh-cn");
+        // 深度图
+        if(tmp.charts.depthStatus==="close"){
+            Control.switchDepth("off")
+        }else if(tmp.charts.depthStatus==="open"){
+            Control.switchDepth("on");
+        }
     }
 
-
     static setHttpRequestParam(symbol, range, limit, since) {
-        let str = "symbol=" + symbol + "&range=" + range;
-        if (limit !== null)
-            str += "&limit=" + limit;
-        else
-            str += "&since=" + since;
-        /*
-        if (KlineTrade.instance.tradeDate.getTime() !== 0) {
-            str += "&prevTradeTime=" + KlineTrade.instance.tradeDate.getTime();
+        return {
+            symbol : symbol,
+            range : range,
+            limit : limit,
+            since : since
         }
-        */
-        return str;
     }
 
     static refreshTemplate() {
@@ -283,12 +202,11 @@ export class Control {
         let tmp = ChartSettings.get();
         tmp.language = lang;
         ChartSettings.save();
-        Kline.instance.onLangChange(lang);
+        Kline.instance.onLangChangeFunc(lang);
     }
 
     static onSize(w, h) {
         let width = w || window.innerWidth;
-        //let chartWidth = Kline.instance.showTrade ? (width - Kline.instance.tradeWidth) : width;
         let chartWidth=width;
         let height = h || window.innerHeight;
         let container = $(Kline.instance.element);
@@ -383,7 +301,7 @@ export class Control {
         let showIndicNW = periodsHorzNW + showIndic.offsetWidth + 4;
         let showToolsNW = showIndicNW + showTools.offsetWidth + 4;
         let selectThemeNW = showToolsNW + selectTheme.offsetWidth;
-        let dropDownSettingsW = dropDownSettings.find(".chart_dropdown_t")[0].offsetWidth + 150;
+        let dropDownSettingsW = dropDownSettings.find(".chart_dropdown_t")[0].offsetWidth + 250;
         periodsVertNW += dropDownSettingsW;
         periodsHorzNW += dropDownSettingsW;
         showIndicNW += dropDownSettingsW;
@@ -417,7 +335,7 @@ export class Control {
         }
 
         ChartManager.instance.redraw('All', true);
-        Kline.instance.onResize(width, height);
+        Kline.instance.onResizeFunc(width, height);
     }
 
     static mouseWheel(e, delta) {
@@ -427,7 +345,6 @@ export class Control {
     }
 
     static switchTheme(name) {
-
         $('#chart_toolbar_theme a').removeClass('selected');
         $('#chart_select_theme a').removeClass('selected');
         $('#chart_toolbar_theme').find('a').each(function () {
@@ -464,7 +381,7 @@ export class Control {
         new MEvent().raise(name);
         ChartManager.instance.redraw();
 
-        Kline.instance.onThemeChange(name);
+        Kline.instance.onThemeChangeFunc(name);
     }
 
     static switchTools(name) {
@@ -572,35 +489,32 @@ export class Control {
         ChartSettings.save();
     }
 
-    static switchDepth(showDepth,depthWidth){
+    static switchDepth(name){
         let tmp = ChartSettings.get();
-        tmp.charts.showDepth = showDepth;
-        tmp.charts.depthWidth = depthWidth;
+        if(name==="on"){
+            tmp.charts.depthStatus="open";
+            $("#chart_show_depth").addClass("selected");
+            ChartManager.instance.getChart().updateDepth(Kline.instance.data.depths);
+        }else if(name==="off"){
+            tmp.charts.depthStatus="close";
+            $("#chart_show_depth").removeClass("selected");
+            ChartManager.instance.getChart().updateDepth(null);
+        }
         ChartSettings.save();
     }
 
     static reset(symbol) {
         Kline.instance.symbol = symbol;
-        /*
-        if (Kline.instance.showTrade) {
-            KlineTrade.instance.reset(symbol);
-        }
-        */
     }
 
     static switchSymbolSelected(symbol,symbolName) {
         Control.reset(symbol);
-        /*
-        $(".market_chooser ul a").removeClass("selected");
-        $(".market_chooser ul a[name='" + symbol + "']").addClass("selected");
-        */
         $(".symbol-title").text(symbolName);
         ChartManager.instance.getChart()._symbol = symbol;
         let settings = ChartSettings.get();
         settings.charts.symbol = symbol;
         ChartSettings.save();
     }
-
 
     static switchSymbol(symbol,symbolName) {
         if (Kline.instance.type === "stomp" && Kline.instance.stompClient.ws.readyState === 1) {
@@ -632,38 +546,6 @@ export class Control {
         periodWeight[index] = 8;
         ChartSettings.save();
     }
-
-    static subscribeCallback(res) {
-        Control.requestSuccessHandler(JSON.parse(res.body));
-    }
-
-    static socketConnect() {
-        if (!Kline.instance.stompClient || !Kline.instance.socketConnected) {
-            Kline.instance.stompClient = Stomp.client(Kline.instance.url);
-            Kline.instance.socketConnected = true;
-        }
-
-        if (Kline.instance.stompClient.ws.readyState === 1) {
-            console.log('DEBUG: already connected');
-            return;
-        }
-
-        if (!Kline.instance.debug) {
-            Kline.instance.stompClient.debug = null;
-        }
-        Kline.instance.stompClient.connect({}, function () {
-            Kline.instance.stompClient.subscribe('/user' + Kline.instance.subscribePath, Control.subscribeCallback);
-            Kline.instance.subscribed = Kline.instance.stompClient.subscribe(Kline.instance.subscribePath + '/' + Kline.instance.symbol + '/' + Kline.instance.range, Control.subscribeCallback);
-            Control.requestData(true);
-        }, function () {
-            Kline.instance.stompClient.disconnect();
-            console.log("DEBUG: reconnect in 5 seconds ...");
-            setTimeout(function () {
-                Control.socketConnect();
-            }, 5000);
-        });
-    }
-
 }
 
 Control.refreshCounter = 0;

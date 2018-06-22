@@ -21,6 +21,12 @@ var themes = _interopRequireWildcard(_themes);
 
 var _chart_settings = require('./chart_settings');
 
+var _kline = require('./kline');
+
+var _kline2 = _interopRequireDefault(_kline);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -96,7 +102,7 @@ var TableLayout = exports.TableLayout = function (_areas$ChartAreaGroup) {
             var nw = 8;
             // chart depths sidebar (深度图侧边栏宽度)
             var tmp = _chart_settings.ChartSettings.get();
-            var minRW = tmp.charts.depthWidth;
+            var minRW = tmp.charts.depthStatus === "open" ? _kline2.default.instance.depthWidth : 50;
             var maxRW = Math.min(240, width >> 1);
             var rw = minRW;
             var mgr = _chart_manager.ChartManager.instance;

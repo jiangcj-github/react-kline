@@ -69,9 +69,6 @@ var Chart = exports.Chart = function () {
             _chart_manager.ChartManager.instance.setCurrentDataSource('frame0.k0', this._symbol + '.' + this._range);
             _chart_manager.ChartManager.instance.setNormalMode();
             var f = _kline2.default.instance.chartMgr.getDataSource("frame0.k0").getLastDate();
-
-            (0, _jquery2.default)('.symbol-title>a').text(_kline2.default.instance.symbolName);
-
             if (f === -1) {
                 _kline2.default.instance.requestParam = _control.Control.setHttpRequestParam(_kline2.default.instance.symbol, _kline2.default.instance.range, _kline2.default.instance.limit, null);
                 _control.Control.requestData(true);
@@ -102,7 +99,7 @@ var Chart = exports.Chart = function () {
                 _kline2.default.instance.subscribed = _kline2.default.instance.stompClient.subscribe(_kline2.default.instance.subscribePath + '/' + _kline2.default.instance.symbol + '/' + this._range, _control.Control.subscribeCallback);
             }
             this.updateDataAndDisplay();
-            _kline2.default.instance.onRangeChange(this._range);
+            _kline2.default.instance.onRangeChangeFunc(this._range);
         }
     }, {
         key: 'updateDataSource',

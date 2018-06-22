@@ -2,8 +2,6 @@ import {NamedObject} from './named_object'
 import {ChartManager} from './chart_manager'
 import {MEvent} from './mevent'
 
-
-
 export class ChartArea extends NamedObject {
 
     constructor(name) {
@@ -281,7 +279,6 @@ export class MainArea extends ChartArea {
     }
 }
 
-
 export class IndicatorArea extends ChartArea {
 
     constructor(name) {
@@ -343,7 +340,6 @@ export class IndicatorArea extends ChartArea {
 
 }
 
-
 export class MainRangeArea extends ChartArea {
 
     constructor(name) {
@@ -356,7 +352,6 @@ export class MainRangeArea extends ChartArea {
     }
 
 }
-
 
 export class IndicatorRangeArea extends ChartArea {
 
@@ -371,7 +366,6 @@ export class IndicatorRangeArea extends ChartArea {
 
 }
 
-
 export class TimelineArea extends ChartArea {
 
     constructor(name) {
@@ -384,7 +378,6 @@ export class TimelineArea extends ChartArea {
     }
 
 }
-
 
 export class ChartAreaGroup extends ChartArea {
 

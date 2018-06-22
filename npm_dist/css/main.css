@@ -453,6 +453,11 @@ body {
     color: #393c40
 }
 
+.chart_container #chart_show_depth{
+    float:right;
+    margin-right:30px;
+}
+
 #chart_toolpanel {
     border-right: 1px solid;
     display: none;

@@ -1,7 +1,6 @@
 import {Control} from './control'
 import {ChartManager} from './chart_manager'
 import {ChartSettings} from './chart_settings'
-import tpl from '../view/tpl.html'
 import $ from 'jquery'
 
 export default class Kline {
@@ -9,7 +8,6 @@ export default class Kline {
     constructor(option) {
         this.element = "#kline_container";
         this.chartMgr = null;
-        this.G_HTTP_REQUEST = null;
         this.timer = null;
         this.buttonDown = false;
         this.init = false;
@@ -22,26 +20,14 @@ export default class Kline {
         this.range = null;
         this.url = "";
         this.limit = 1000;
-        this.type = "poll";
-        this.subscribePath = "";
-        this.sendPath = "";
-        this.stompClient = null;
         this.intervalTime = 5000;
         this.debug = true;
         this.language = "zh-cn";
         this.theme = "dark";
         this.ranges = ["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"];
-        //this.showTrade = true;
-        //this.tradeWidth = 250;
-        this.socketConnected = false;
-        //this.enableSockjs = true;
         this.reverseColor = false;
         this.isSized = false;
-        this.paused = false;
-        this.subscribed = null;
-        //this.disableFirebase = false;
-        this.showDepth=false;
-        this.depthWidth=50;
+        this.depthWidth=100;
 
         this.periodMap = {
             "01w": 7 * 86400 * 1000,
@@ -59,7 +45,6 @@ export default class Kline {
             "01m": 60 * 1000,
             "line": 60 * 1000
         };
-
         this.tagMapPeriod = {
             "1w": "01w",
             "3d": "03d",
@@ -76,6 +61,13 @@ export default class Kline {
             "1m": "01m",
             "line": "line"
         };
+        //event
+        this.onResize=null;
+        this.onLangChange=null;
+        this.onSymbolChange=null;
+        this.onThemeChange=null;
+        this.onRangeChange=null;
+        this.onRequestData=null;
 
         Object.assign(this, option);
 
@@ -92,28 +84,17 @@ export default class Kline {
      *********************************************/
 
     draw() {
-        //Kline.trade = new KlineTrade();
         Kline.chartMgr = new ChartManager();
 
-        let view = $.parseHTML(tpl);
+        let view = $(this.element);
         for (let k in this.ranges) {
             let res = $(view).find('[name="' + this.ranges[k] + '"]');
             res.each(function (i, e) {
                 $(e).attr("style", "display:inline-block");
             });
         }
-        $(this.element).html(view);
 
         setInterval(Control.refreshFunction, this.intervalTime);
-        if (this.type === "stomp") {
-            Control.socketConnect();
-        }
-
-        /*
-        if (!this.disableFirebase) {
-            fire();
-        }
-        */
 
         this.registerMouseEvent();
         ChartManager.instance.bindCanvas("main", document.getElementById("chart_mainCanvas"));
@@ -125,7 +106,6 @@ export default class Kline {
         this.setTheme(this.theme);
         this.setLanguage(this.language);
         this.setSymbol(this.symbol,this.symbolName);
-        this.setDepth(this.showDepth,this.depthWidth);
 
         $(this.element).css({visibility: "visible"});
     }
@@ -140,7 +120,7 @@ export default class Kline {
         this.symbol = symbol;
         this.symbolName = symbolName;
         Control.switchSymbol(symbol,symbolName);
-        this.onSymbolChange(symbol, symbolName);
+        this.onSymbolChangeFunc(symbol, symbolName);
     }
 
     setTheme(style) {
@@ -153,12 +133,6 @@ export default class Kline {
         Control.chartSwitchLanguage(lang);
     }
 
-    setDepth(showDepth,depthWidth){
-        this.showDepth=showDepth;
-        this.depthWidth=depthWidth;
-        Control.switchDepth(showDepth,depthWidth);
-    }
-
     setIntervalTime(intervalTime) {
         this.intervalTime = intervalTime;
         if (this.debug) {
@@ -166,80 +140,55 @@ export default class Kline {
         }
     }
 
-    pause() {
-        if (this.debug) {
-            console.log('DEBUG: kline paused');
-        }
-        this.paused = true;
+    setDepthWidth(width){
+        this.depthWidth = width;
+        ChartManager.instance.redraw('All', false);
     }
-
-    resend() {
-        if (this.debug) {
-            console.log('DEBUG: kline continue');
-        }
-        this.paused = false;
-        Control.requestData(true);
-    }
-
-    connect() {
-        if (this.type !== 'stomp') {
-            if (this.debug) {
-                console.log('DEBUG: this is for stomp type');
-            }
-            return;
-        }
-        Control.socketConnect();
-    }
-
-    disconnect() {
-        if (this.type !== 'stomp') {
-            if (this.debug) {
-                console.log('DEBUG: this is for stomp type');
-            }
-            return;
-        }
-        if (this.stompClient) {
-            this.stompClient.disconnect();
-            this.socketConnected = false;
-        }
-        if (this.debug) {
-            console.log('DEBUG: socket disconnected');
-        }
-    }
-
 
     /*********************************************
      * Events
      *********************************************/
 
-    onResize(width, height) {
+    onResizeFunc(width, height) {
         if (this.debug) {
             console.log("DEBUG: chart resized to width: " + width + " height: " + height);
         }
+        this.onResize && this.onResize(width,height);
     }
 
-    onLangChange(lang) {
+    onLangChangeFunc(lang) {
         if (this.debug) {
             console.log("DEBUG: language changed to " + lang);
         }
+        this.onLangChange && this.onLangChange(lang);
     }
 
-    onSymbolChange(symbol, symbolName) {
+    onSymbolChangeFunc(symbol, symbolName) {
         if (this.debug) {
             console.log("DEBUG: symbol changed to " + symbol + " " + symbolName);
         }
+        this.onSymbolChange && this.onSymbolChange(symbol,symbolName);
     }
 
-    onThemeChange(theme) {
+    onThemeChangeFunc(theme) {
         if (this.debug) {
             console.log("DEBUG: themes changed to : " + theme);
         }
+        this.onThemeChange && this.onThemeChange(theme);
     }
 
-    onRangeChange(range) {
+    onRangeChangeFunc(range) {
         if (this.debug) {
             console.log("DEBUG: range changed to " + range);
         }
+        this.onRangeChange && this.onRangeChange(range);
+    }
+
+    onRequestDataFunc(param,callback){
+        if (this.debug) {
+            console.log("DEBUG: request data to " + JSON.stringify(param));
+        }
+        this.onRequestData && this.onRequestData(param,callback);
     }
 
     registerMouseEvent() {
@@ -253,7 +202,6 @@ export default class Kline {
                     Control.onSize(this.width, this.height)
                 }
             }
-
             $('#chart_overlayCanvas').bind("contextmenu", function (e) {
                 e.cancelBubble = true;
                 e.returnValue = false;
@@ -318,19 +266,19 @@ export default class Kline {
             $(".chart_container .chart_toolbar_tabgroup a")
                 .click(function () {
                     Control.switchPeriod($(this).parent().attr('name'));
-
                 });
             $("#chart_toolbar_periods_vert ul a").click(function () {
-
                 Control.switchPeriod($(this).parent().attr('name'));
-
             });
-
-            $(".market_chooser ul a").click(function () {
-                Control.switchSymbol($(this).attr('name'));
-            });
-
-            $('#chart_show_tools')
+            $("#chart_show_depth")
+                .click(function(){
+                    if($(this).hasClass('selected')){
+                        Control.switchDepth("off");
+                    }else{
+                        Control.switchDepth("on");
+                    }
+                });
+            $("#chart_show_tools")
                 .click(function () {
                     if ($(this).hasClass('selected')) {
                         Control.switchTools('off');
@@ -554,7 +502,6 @@ export default class Kline {
                 ChartManager.instance.redraw('All', false);
             });
 
-
             $('body').on('click', '#sizeIcon', function () {
                 Kline.instance.isSized = !Kline.instance.isSized;
                 if (Kline.instance.isSized) {
@@ -580,7 +527,6 @@ export default class Kline {
                     $(Kline.instance.element).css({visibility: 'visible', height: Kline.instance.height + 'px'});
                 }
             });
-
         })
 
     }

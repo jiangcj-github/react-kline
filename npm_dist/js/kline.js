@@ -12,10 +12,6 @@ var _chart_manager = require('./chart_manager');
 
 var _chart_settings = require('./chart_settings');
 
-var _tpl = require('../view/tpl.html');
-
-var _tpl2 = _interopRequireDefault(_tpl);
-
 var _jquery = require('jquery');
 
 var _jquery2 = _interopRequireDefault(_jquery);
@@ -30,7 +26,6 @@ var Kline = function () {
 
         this.element = "#kline_container";
         this.chartMgr = null;
-        this.G_HTTP_REQUEST = null;
         this.timer = null;
         this.buttonDown = false;
         this.init = false;
@@ -43,26 +38,14 @@ var Kline = function () {
         this.range = null;
         this.url = "";
         this.limit = 1000;
-        this.type = "poll";
-        this.subscribePath = "";
-        this.sendPath = "";
-        this.stompClient = null;
         this.intervalTime = 5000;
         this.debug = true;
         this.language = "zh-cn";
         this.theme = "dark";
         this.ranges = ["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"];
-        //this.showTrade = true;
-        //this.tradeWidth = 250;
-        this.socketConnected = false;
-        //this.enableSockjs = true;
         this.reverseColor = false;
         this.isSized = false;
-        this.paused = false;
-        this.subscribed = null;
-        //this.disableFirebase = false;
-        this.showDepth = false;
-        this.depthWidth = 50;
+        this.depthWidth = 100;
 
         this.periodMap = {
             "01w": 7 * 86400 * 1000,
@@ -80,7 +63,6 @@ var Kline = function () {
             "01m": 60 * 1000,
             "line": 60 * 1000
         };
-
         this.tagMapPeriod = {
             "1w": "01w",
             "3d": "03d",
@@ -97,6 +79,13 @@ var Kline = function () {
             "1m": "01m",
             "line": "line"
         };
+        //event
+        this.onResize = null;
+        this.onLangChange = null;
+        this.onSymbolChange = null;
+        this.onThemeChange = null;
+        this.onRangeChange = null;
+        this.onRequestData = null;
 
         Object.assign(this, option);
 
@@ -114,28 +103,17 @@ var Kline = function () {
     _createClass(Kline, [{
         key: 'draw',
         value: function draw() {
-            //Kline.trade = new KlineTrade();
             Kline.chartMgr = new _chart_manager.ChartManager();
 
-            var view = _jquery2.default.parseHTML(_tpl2.default);
+            var view = (0, _jquery2.default)(this.element);
             for (var k in this.ranges) {
                 var res = (0, _jquery2.default)(view).find('[name="' + this.ranges[k] + '"]');
                 res.each(function (i, e) {
                     (0, _jquery2.default)(e).attr("style", "display:inline-block");
                 });
             }
-            (0, _jquery2.default)(this.element).html(view);
 
             setInterval(_control.Control.refreshFunction, this.intervalTime);
-            if (this.type === "stomp") {
-                _control.Control.socketConnect();
-            }
-
-            /*
-            if (!this.disableFirebase) {
-                fire();
-            }
-            */
 
             this.registerMouseEvent();
             _chart_manager.ChartManager.instance.bindCanvas("main", document.getElementById("chart_mainCanvas"));
@@ -147,7 +125,6 @@ var Kline = function () {
             this.setTheme(this.theme);
             this.setLanguage(this.language);
             this.setSymbol(this.symbol, this.symbolName);
-            this.setDepth(this.showDepth, this.depthWidth);
 
             (0, _jquery2.default)(this.element).css({ visibility: "visible" });
         }
@@ -164,7 +141,7 @@ var Kline = function () {
             this.symbol = symbol;
             this.symbolName = symbolName;
             _control.Control.switchSymbol(symbol, symbolName);
-            this.onSymbolChange(symbol, symbolName);
+            this.onSymbolChangeFunc(symbol, symbolName);
         }
     }, {
         key: 'setTheme',
@@ -179,13 +156,6 @@ var Kline = function () {
             _control.Control.chartSwitchLanguage(lang);
         }
     }, {
-        key: 'setDepth',
-        value: function setDepth(showDepth, depthWidth) {
-            this.showDepth = showDepth;
-            this.depthWidth = depthWidth;
-            _control.Control.switchDepth(showDepth, depthWidth);
-        }
-    }, {
         key: 'setIntervalTime',
         value: function setIntervalTime(intervalTime) {
             this.intervalTime = intervalTime;
@@ -194,49 +164,10 @@ var Kline = function () {
             }
         }
     }, {
-        key: 'pause',
-        value: function pause() {
-            if (this.debug) {
-                console.log('DEBUG: kline paused');
-            }
-            this.paused = true;
-        }
-    }, {
-        key: 'resend',
-        value: function resend() {
-            if (this.debug) {
-                console.log('DEBUG: kline continue');
-            }
-            this.paused = false;
-            _control.Control.requestData(true);
-        }
-    }, {
-        key: 'connect',
-        value: function connect() {
-            if (this.type !== 'stomp') {
-                if (this.debug) {
-                    console.log('DEBUG: this is for stomp type');
-                }
-                return;
-            }
-            _control.Control.socketConnect();
-        }
-    }, {
-        key: 'disconnect',
-        value: function disconnect() {
-            if (this.type !== 'stomp') {
-                if (this.debug) {
-                    console.log('DEBUG: this is for stomp type');
-                }
-                return;
-            }
-            if (this.stompClient) {
-                this.stompClient.disconnect();
-                this.socketConnected = false;
-            }
-            if (this.debug) {
-                console.log('DEBUG: socket disconnected');
-            }
+        key: 'setDepthWidth',
+        value: function setDepthWidth(width) {
+            this.depthWidth = width;
+            _chart_manager.ChartManager.instance.redraw('All', false);
         }
 
         /*********************************************
@@ -244,39 +175,52 @@ var Kline = function () {
          *********************************************/
 
     }, {
-        key: 'onResize',
-        value: function onResize(width, height) {
+        key: 'onResizeFunc',
+        value: function onResizeFunc(width, height) {
             if (this.debug) {
                 console.log("DEBUG: chart resized to width: " + width + " height: " + height);
             }
+            this.onResize && this.onResize(width, height);
         }
     }, {
-        key: 'onLangChange',
-        value: function onLangChange(lang) {
+        key: 'onLangChangeFunc',
+        value: function onLangChangeFunc(lang) {
             if (this.debug) {
                 console.log("DEBUG: language changed to " + lang);
             }
+            this.onLangChange && this.onLangChange(lang);
         }
     }, {
-        key: 'onSymbolChange',
-        value: function onSymbolChange(symbol, symbolName) {
+        key: 'onSymbolChangeFunc',
+        value: function onSymbolChangeFunc(symbol, symbolName) {
             if (this.debug) {
                 console.log("DEBUG: symbol changed to " + symbol + " " + symbolName);
             }
+            this.onSymbolChange && this.onSymbolChange(symbol, symbolName);
         }
     }, {
-        key: 'onThemeChange',
-        value: function onThemeChange(theme) {
+        key: 'onThemeChangeFunc',
+        value: function onThemeChangeFunc(theme) {
             if (this.debug) {
                 console.log("DEBUG: themes changed to : " + theme);
             }
+            this.onThemeChange && this.onThemeChange(theme);
         }
     }, {
-        key: 'onRangeChange',
-        value: function onRangeChange(range) {
+        key: 'onRangeChangeFunc',
+        value: function onRangeChangeFunc(range) {
             if (this.debug) {
                 console.log("DEBUG: range changed to " + range);
             }
+            this.onRangeChange && this.onRangeChange(range);
+        }
+    }, {
+        key: 'onRequestDataFunc',
+        value: function onRequestDataFunc(param, callback) {
+            if (this.debug) {
+                console.log("DEBUG: request data to " + JSON.stringify(param));
+            }
+            this.onRequestData && this.onRequestData(param, callback);
         }
     }, {
         key: 'registerMouseEvent',
@@ -291,7 +235,6 @@ var Kline = function () {
                         _control.Control.onSize(this.width, this.height);
                     }
                 }
-
                 (0, _jquery2.default)('#chart_overlayCanvas').bind("contextmenu", function (e) {
                     e.cancelBubble = true;
                     e.returnValue = false;
@@ -353,15 +296,16 @@ var Kline = function () {
                     _control.Control.switchPeriod((0, _jquery2.default)(this).parent().attr('name'));
                 });
                 (0, _jquery2.default)("#chart_toolbar_periods_vert ul a").click(function () {
-
                     _control.Control.switchPeriod((0, _jquery2.default)(this).parent().attr('name'));
                 });
-
-                (0, _jquery2.default)(".market_chooser ul a").click(function () {
-                    _control.Control.switchSymbol((0, _jquery2.default)(this).attr('name'));
+                (0, _jquery2.default)("#chart_show_depth").click(function () {
+                    if ((0, _jquery2.default)(this).hasClass('selected')) {
+                        _control.Control.switchDepth("off");
+                    } else {
+                        _control.Control.switchDepth("on");
+                    }
                 });
-
-                (0, _jquery2.default)('#chart_show_tools').click(function () {
+                (0, _jquery2.default)("#chart_show_tools").click(function () {
                     if ((0, _jquery2.default)(this).hasClass('selected')) {
                         _control.Control.switchTools('off');
                     } else {

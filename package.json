@@ -1,13 +1,13 @@
 {
   "name": "react-kline",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
-  "main": "dist/index.js",
+  "main": "npm_dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack-dev-server --inline --progress --mode development --config webpack.config.js",
+    "dev": "webpack-dev-server --inline --progress --mode development",
     "build-npm": "babel src -d npm_dist --copy-files",
-    "build-demo": "webpack --mode production --config webpack.config.js",
+    "build-demo": "webpack --mode production",
     "deploy-demo": "gh-pages -d demo_dist",
     "publish-demo": "npm run build-demo && npm run deploy-demo"
   },
@@ -17,11 +17,8 @@
   "dependencies": {
     "jquery": "^3.3.1",
     "jquery-mousewheel": "^3.1.13",
-    "net": "^1.0.2",
     "react": "^16.4.1",
-    "react-dom": "^16.4.1",
-    "react-proptypes": "^1.0.0",
-    "stompjs": "^2.3.3"
+    "react-dom": "^16.4.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -32,6 +29,7 @@
     "babel-preset-react": "^6.24.1",
     "compression-webpack-plugin": "^1.1.11",
     "css-loader": "^0.28.11",
+    "gh-pages": "^1.2.0",
     "html-loader": "^0.5.1",
     "html-webpack-plugin": "^3.2.0",
     "style-loader": "^0.21.0",

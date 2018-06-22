@@ -78,8 +78,7 @@ var ChartSettings = exports.ChartSettings = function () {
             _frame.indics = _indic;
             _frame.indicsStatus = 'close';
             _frame.period = _range;
-            _frame.showDepth = false;
-            _frame.depthWidth = 50;
+            _frame.depthStatus = 'close';
             ChartSettings._data = {
                 ver: 1,
                 charts: _frame,
