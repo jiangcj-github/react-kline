@@ -30,6 +30,14 @@ $ npm install react-kline
     import ReactKline from 'react-kline';
 
     class App extends React.Component {
+
+        onRequestData(param,callback){
+            let data={};
+            //请求数据
+            //...
+            callback(data);
+        }
+
         render() {
             return (
                 <ReactKline
@@ -45,13 +53,6 @@ $ npm install react-kline
             );
         }
     }
-
-	onRequestData(param,callback){
-		//请求数据
-		let data={};
-		//...
-		callback(data);
-	}
 
     ReactDOM.render(
         <App />,
