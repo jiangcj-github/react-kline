@@ -66,9 +66,9 @@ $ npm install react-kline
 |:---------|:-----------------|:------------
 |`width`   | 宽度 (px)         | 600
 |`height` | 高度度 (px) | 400
-|`theme` | 主题 dark(暗色)/light(亮色)?| dark
-|`language` | 语言 zh-cn(简体中文)/en-us(英文)/zh-tw(繁体中文)?| zh-cn
-|`ranges` | 聚合选项 1w/1d/12h/6h/4h/2h/1h/30m/15m/5m/3m/1m/line (w:周, d:天, h:小时, m:分钟, line:分时数据)?| ["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"]
+|`theme` | 主题 dark(暗色)/light(亮色)| dark
+|`language` | 语言 zh-cn(简体中文)/en-us(英文)/zh-tw(繁体中文)| zh-cn
+|`ranges` | 聚合选项 1w/1d/12h/6h/4h/2h/1h/30m/15m/5m/3m/1m/line (w:周, d:天, h:小时, m:分钟, line:分时数据)| ["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"]
 |`symbol` | 交易代号| 
 |`symbolName`  | 交易名称 | 
 |`limit`  | 分页大小 | 1000
@@ -131,7 +131,7 @@ setDepthWidth(100);
 
 ### 事件
 
-| 事件函数                 | ? 说明
+| 事件函数                 |  说明
 |:-----------------------|:------------
 | `onResize: function(width, height)`   | 画布尺寸改变时触发
 | `onLangChange: function(lang)`   | 语言改变时触发
@@ -146,9 +146,8 @@ setDepthWidth(100);
 {
   "symbol": "BTC",		// 交易品种
   "range": 900000,		// range类型，毫秒
-  "limit": 1000,		//
-  "since": 
-symbol, range, limit, since
+  "limit": 1000,
+  "since": "1512205140000"      // 时间
 }
 ```
 
@@ -197,7 +196,7 @@ symbol, range, limit, since
 ```json
 {
   "success": false,
-  "data": null,		// success为false，则忽略data
+  "data": null,	        // success为false，则忽略data
 }
 ```
 
