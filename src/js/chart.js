@@ -80,7 +80,7 @@ export class Chart {
     }
 
     updateDepth(array) {
-        if (array === null) {
+        if (array == null) {
             this._depthData.array = [];
             ChartManager.instance.redraw('All', false);
             return;
