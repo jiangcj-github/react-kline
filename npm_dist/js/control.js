@@ -338,7 +338,7 @@ var Control = exports.Control = function () {
             var showIndicNW = periodsHorzNW + showIndic.offsetWidth + 4;
             var showToolsNW = showIndicNW + showTools.offsetWidth + 4;
             var selectThemeNW = showToolsNW + selectTheme.offsetWidth;
-            var dropDownSettingsW = dropDownSettings.find(".chart_dropdown_t")[0].offsetWidth + 250;
+            var dropDownSettingsW = dropDownSettings.find(".chart_dropdown_t")[0].offsetWidth + 300;
             periodsVertNW += dropDownSettingsW;
             periodsHorzNW += dropDownSettingsW;
             showIndicNW += dropDownSettingsW;

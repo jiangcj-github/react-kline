@@ -53,7 +53,7 @@ var ReactKline = function (_React$Component) {
                 symbolName: "BTC/USD",
                 limit: 1000,
                 intervalTime: 5000,
-                debug: true,
+                debug: false,
                 depthWidth: 50
             };
             Object.assign(cfg, this.state.props);
