@@ -644,10 +644,10 @@ body {
     cursor: default;
     display: none;
     *font-weight: bold;
-    height: 22px;
     overflow: hidden;
     position: absolute;
-    z-index: 1
+    z-index: 1;
+    height: 24px;
 }
 
 #chart_tabbar ul {
@@ -667,7 +667,8 @@ body {
     display: inline-block;
     height: 100%;
     margin: 0;
-    padding: 3px 4px 0 4px;
+    padding: 0 4px 0 4px;
+    line-height: 24px;
     overflow: hidden
 }
 

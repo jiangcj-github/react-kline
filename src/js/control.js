@@ -234,7 +234,7 @@ export class Control {
         toolPanelRect.h = height - toolPanelRect.y;
         let tabBarRect = {};
         tabBarRect.w = toolPanelShown ? chartWidth - (toolPanelRect.w + 1 ) : chartWidth;
-        tabBarRect.h = tabBarShown ? 22 : -1;
+        tabBarRect.h = tabBarShown ? 25 : -1;
         tabBarRect.x = chartWidth - tabBarRect.w;
         tabBarRect.y = height - (tabBarRect.h + 1 );
         let canvasGroupRect = {};
@@ -430,12 +430,6 @@ export class Control {
             tmp.charts.indicsStatus = 'open';
             ChartSettings.save();
             let value = tmp.charts.indics[1];
-            /*
-            if (Template.displayVolume === false)
-                ChartManager.instance.getChart().setIndicator(2, value);
-            else
-                ChartManager.instance.getChart().setIndicator(2, value);
-            */
             ChartManager.instance.getChart().setIndicator(1, value);
             $("#chart_tabbar").find('a').each(function () {
                 if ($(this).attr('name') === value)

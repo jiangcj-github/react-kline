@@ -269,7 +269,7 @@ var Control = exports.Control = function () {
             toolPanelRect.h = height - toolPanelRect.y;
             var tabBarRect = {};
             tabBarRect.w = toolPanelShown ? chartWidth - (toolPanelRect.w + 1) : chartWidth;
-            tabBarRect.h = tabBarShown ? 22 : -1;
+            tabBarRect.h = tabBarShown ? 25 : -1;
             tabBarRect.x = chartWidth - tabBarRect.w;
             tabBarRect.y = height - (tabBarRect.h + 1);
             var canvasGroupRect = {};
@@ -469,12 +469,6 @@ var Control = exports.Control = function () {
                 tmp.charts.indicsStatus = 'open';
                 _chart_settings.ChartSettings.save();
                 var value = tmp.charts.indics[1];
-                /*
-                if (Template.displayVolume === false)
-                    ChartManager.instance.getChart().setIndicator(2, value);
-                else
-                    ChartManager.instance.getChart().setIndicator(2, value);
-                */
                 _chart_manager.ChartManager.instance.getChart().setIndicator(1, value);
                 (0, _jquery2.default)("#chart_tabbar").find('a').each(function () {
                     if ((0, _jquery2.default)(this).attr('name') === value) (0, _jquery2.default)(this).addClass('selected');
