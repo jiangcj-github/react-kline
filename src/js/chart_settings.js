@@ -52,13 +52,13 @@ export class ChartSettings {
         }
         let _chart_style = 'CandleStick';
         let _m_indic = 'MA';
-        let _indic = ['VOLUME', 'MACD'];
+        let _indic = ['VOLUME', 'VOLUME'];
         let _range = '15m';
         let _frame = {};
         _frame.chartStyle = _chart_style;
         _frame.mIndic = _m_indic;
         _frame.indics = _indic;
-        _frame.indicsStatus = 'close';
+        _frame.indicsStatus = 'open';
         _frame.period = _range;
         _frame.depthStatus = 'close';
         ChartSettings._data = {
