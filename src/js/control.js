@@ -118,6 +118,8 @@ export class Control {
         chart_style.find('a').each(function () {
             if ($(this)[0].innerHTML === tmp.charts.chartStyle) {
                 $(this).addClass('selected');
+            }else{
+                $(this).removeClass("selected");
             }
         });
         ChartManager.instance.setChartStyle('frame0.k0', tmp.charts.chartStyle);
@@ -131,8 +133,6 @@ export class Control {
         Control.switchSymbolSelected(symbol);
         // 周期
         let period = tmp.charts.period;
-        $('#chart_period_' + period + '_v a').addClass('selected');
-        $('#chart_period_' + period + '_h a').addClass('selected');
         Control.switchPeriod(period);
         // 技术指标
         if (tmp.charts.indicsStatus === 'close') {
@@ -145,6 +145,8 @@ export class Control {
         mainIndic.find('a').each(function () {
             if ($(this).attr('name') === tmp.charts.mIndic) {
                 $(this).addClass('selected');
+            }else{
+                $(this).removeClass("selected");
             }
         });
         ChartManager.instance.getChart().setMainIndicator(tmp.charts.mIndic);

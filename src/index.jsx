@@ -141,7 +141,7 @@ class ReactKline extends React.Component {
                                         <td>
                                             <ul>
                                                 <li><a className="selected">CandleStick</a></li>
-                                                <li><a>CandleStickHLC</a></li>
+                                                <li><a className="">CandleStickHLC</a></li>
                                                 <li><a className="">OHLC</a></li>
                                             </ul>
                                         </td>
@@ -202,6 +202,10 @@ class ReactKline extends React.Component {
                     </div>
                     <div id="chart_toolpanel">
                         <div className="chart_toolpanel_separator"></div>
+                        <div className="clear_all">
+                            <div className="clear_all_icon" id="clearCanvas"></div>
+                            <div className="chart_toolpanel_tip chart_str_clear_all">清除全部</div>
+                        </div>
                         <div className="chart_toolpanel_button">
                             <div className="chart_toolpanel_icon" id="chart_Cursor" name="Cursor"></div>
                             <div className="chart_toolpanel_tip chart_str_cursor">光标</div>
@@ -265,10 +269,6 @@ class ReactKline extends React.Component {
                         <div className="chart_toolpanel_button">
                             <div className="chart_toolpanel_icon" id="chart_DrawFibFans" name="DrawFibFans"></div>
                             <div className="chart_toolpanel_tip chart_str_fib_fans">斐波纳契扇形</div>
-                        </div>
-                        <div className="clear_all">
-                            <div className="clear_all_icon" id="clearCanvas"></div>
-                            <div className="chart_toolpanel_tip chart_str_clear_all">清除全部</div>
                         </div>
                     </div>
                     <div id="chart_canvasGroup" className="temp">

@@ -2,12 +2,11 @@ html,
 body {
     min-height: 100%;
     margin: 0;
-    min-width: 100%
+    min-width: 100%;
 }
 
 .chart_container {
     cursor: default;
-    font-family: arial, sans, serif;
     font-size: 12px;
     height: 100%;
     position: relative;
@@ -58,12 +57,12 @@ body {
 }
 
 .chart_container.dark #chart_toolbar {
-    background-color: #0a0a0a;
+    background-color: #161616;
     border-bottom-color: #404040
 }
 
 .chart_container.light #chart_toolbar {
-    background-color: #fff;
+    background-color: #f6f6f6;
     border-bottom-color: #afb1b3
 }
 
@@ -77,7 +76,8 @@ body {
     display: inline-block;
     float: left;
     position: relative;
-    z-index: 100
+    z-index: 100;
+    cursor:pointer;
 }
 
 .chart_container .chart_dropdown_t {
@@ -182,12 +182,12 @@ body {
 .chart_container.dark .chart_dropdown_t {
     background-image: url("../img/dropdown_w.png");
     background-position: right 9px;
-    border-color: #0a0a0a;
+    border-color: #161616;
     color: #e5e5e5
 }
 
 .chart_container.dark .chart_dropdown-hover.chart_dropdown_t {
-    background-color: #0a0a0a;
+    background-color: #161616;
     background-image: url("../img/dropup_w.png");
     background-position: right 8px;
     border-color: #606060;
@@ -195,7 +195,7 @@ body {
 }
 
 .chart_container.dark .chart_dropdown_data {
-    background-color: rgba(10, 10, 10, 0.8);
+    background-color: rgba(22, 22, 22, 0.8);
     border-color: #606060
 }
 
@@ -219,12 +219,12 @@ body {
 .chart_container.light .chart_dropdown_t {
     background-image: url("../img/dropdown_b.png");
     background-position: right 10px;
-    border-color: #fff;
+    border-color: #f6f6f6;
     color: #393c40
 }
 
 .chart_container.light .chart_dropdown-hover.chart_dropdown_t {
-    background-color: #fff;
+    background-color: #f6f6f6;
     background-image: url("../img/dropup_b.png");
     background-position: right 9px;
     border-color: #4c4f53;
@@ -232,7 +232,7 @@ body {
 }
 
 .chart_container.light .chart_dropdown_data {
-    background-color: #fff;
+    background-color: rgba(246,246,246,0.8);
     border-color: #4c4f53
 }
 
@@ -506,12 +506,12 @@ body {
 }
 
 .chart_container.dark #chart_toolpanel {
-    background-color: #0a0a0a;
+    background-color: #161616;
     border-right-color: #404040
 }
 
 .chart_container.dark .chart_toolpanel_icon {
-    background-color: #0a0a0a;
+    background-color: #161616;
 }
 
 .chart_container.dark .chart_toolpanel_button:hover .chart_toolpanel_icon {
@@ -519,26 +519,26 @@ body {
 }
 
 .chart_container.dark .chart_toolpanel_button.selected .chart_toolpanel_icon {
-    background-color: #080808;
+    background-color: #161616;
 }
 
 .chart_container.dark .chart_toolpanel_tip {
     background-color: #ffac00;
     border-color: #ffac00;
-    color: #0a0a0a
+    color: #161616
 }
 
 .chart_container.light #chart_toolpanel {
-    background-color: #fff;
+    background-color: #f6f6f6;
     border-right-color: #afb1b3
 }
 
 .chart_container.light .chart_toolpanel_icon {
-    background-color: #fff;
+    background-color: #f6f6f6;
 }
 
 .chart_container.light .chart_toolpanel_button:hover .chart_toolpanel_icon {
-    background-color: #eee;
+    background-color: #ccc;
 }
 
 .chart_container.light .chart_toolpanel_button.selected .chart_toolpanel_icon {
@@ -676,7 +676,7 @@ body {
 }
 
 .chart_container.dark #chart_tabbar {
-    background-color: #0a0a0a;
+    background-color: #161616;
     border-top-color: #404040
 }
 
@@ -694,7 +694,7 @@ body {
 }
 
 .chart_container.light #chart_tabbar {
-    background-color: #fff;
+    background-color: #f6f6f6;
     border-top-color: #afb1b3
 }
 
@@ -811,8 +811,8 @@ body {
 }
 
 .chart_container.dark #chart_parameter_settings {
-    background-color: rgba(0, 0, 0, 0.9);
-    border-color: #222;
+    background-color: rgba(22, 22, 22, 0.8);
+    border-color: #666;
     color: #ccc;
 }
 
@@ -827,7 +827,7 @@ body {
 }
 
 .chart_container.light #chart_parameter_settings {
-    background-color: rgba(244, 244, 244, 0.8);
+    background-color: rgba(246, 246, 246, 0.8);
     border-color: #afb1b3;
     color: #393c40
 }
@@ -856,7 +856,6 @@ body {
 .chart_container input[type=button],
 .chart_container input[type=submit],
 .chart_container button {
-    font-family: arial, sans, serif;
     padding: 4px 8px;
     cursor: pointer
 }
@@ -917,6 +916,7 @@ body {
     float: left;
     line-height: 29px;
     padding:0 10px;
+    font-weight: bold;
 }
 .chart_container.dark .symbol-title{
     color:#e5e5e5;

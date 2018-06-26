@@ -68,7 +68,6 @@ $ npm install react-kline
 |`limit`  | 分页大小 | 1000
 |`intervalTime`  | 请求间隔时间(ms) | 3000
 |`debug` | 是否开启调试模式 true/false |  true
-|`reverseColor` | 是否反色, 默认绿涨红跌 true/false | false
 |`depthWidth` | 深度图宽度 | 最小50，小于50则取50，默认50
 
 

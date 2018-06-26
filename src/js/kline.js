@@ -12,6 +12,7 @@ export default class Kline {
         this.buttonDown = false;
         this.init = false;
         this.requestParam = "";
+        this.isSized = false;
         this.data = {};
         this.width = 1200;
         this.height = 650;
@@ -25,8 +26,6 @@ export default class Kline {
         this.language = "zh-cn";
         this.theme = "dark";
         this.ranges = ["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"];
-        this.reverseColor = false;
-        this.isSized = false;
         this.depthWidth=100;
 
         this.periodMap = {
