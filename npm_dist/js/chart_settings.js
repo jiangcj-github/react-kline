@@ -70,13 +70,13 @@ var ChartSettings = exports.ChartSettings = function () {
             }
             var _chart_style = 'CandleStick';
             var _m_indic = 'MA';
-            var _indic = ['VOLUME', 'MACD'];
+            var _indic = ['VOLUME', 'VOLUME'];
             var _range = '15m';
             var _frame = {};
             _frame.chartStyle = _chart_style;
             _frame.mIndic = _m_indic;
             _frame.indics = _indic;
-            _frame.indicsStatus = 'close';
+            _frame.indicsStatus = 'open';
             _frame.period = _range;
             _frame.depthStatus = 'close';
             ChartSettings._data = {
